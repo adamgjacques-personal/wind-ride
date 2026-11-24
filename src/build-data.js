@@ -3,12 +3,12 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fetchForecast } from './providers/openMeteo.js';
-import { evaluateLocation, isRaining, dayPhase } from './evaluator.js';
+import { evaluateLocation, dayPhase } from './evaluator.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 export function windyLink(loc) {
-  return loc.windyUrl || `https://www.windy.com/${loc.lat}/${loc.lon}?${loc.lat},${loc.lon},10`;
+  return loc.windyUrl || `https://www.windy.com/${loc.lat}/${loc.lon}?${loc.lat},${loc.lon},16`;
 }
 
 export function validateLocation(loc) {
@@ -38,13 +38,12 @@ async function main() {
       const upcoming = hours
         .filter((h) => h.time >= localNow)
         .map((h) => ({ ...h, phase: dayPhase(h.time, sun[h.time.slice(0, 10)]) }));
-      const raining = isRaining(upcoming[0]);
       const result = evaluateLocation(upcoming, loc.conditions, { ...amber, ...loc.amber });
-      out.push({ id: loc.id, name: loc.name, windyUrl: windyLink(loc), raining, nextWindow: result.nextWindow, days: result.days, error: null });
+      out.push({ id: loc.id, name: loc.name, windyUrl: windyLink(loc), now: result.now, nextWindow: result.nextWindow, days: result.days, error: null });
     } catch (err) {
       // One failing location should not blank the whole page.
       console.error(`Failed for ${loc.id}: ${err.message}`);
-      out.push({ id: loc.id, name: loc.name, windyUrl: windyLink(loc), raining: false, nextWindow: null, days: [], error: err.message });
+      out.push({ id: loc.id, name: loc.name, windyUrl: windyLink(loc), now: null, nextWindow: null, days: [], error: err.message });
     }
   }
 

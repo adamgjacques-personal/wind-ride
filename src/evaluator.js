@@ -122,7 +122,7 @@ export function meanDirection(degs) {
 /**
  * Evaluate a location over its forecast.
  * hours: array of { time, speed, direction, gust, precip }, already limited to the hours to consider.
- * Returns { days: [{date, status, speedKmh, directionDeg, gustKmh, rain}], windows, nextWindow }.
+ * Returns { now, days: [{date, status, speedKmh, directionDeg, gustKmh, rain}], windows, nextWindow }.
  */
 export function evaluateLocation(hours, conditions, amber) {
   const classified = hours.map((h) => ({ ...h, status: classifyHour(h, conditions, amber) }));
@@ -151,5 +151,16 @@ export function evaluateLocation(hours, conditions, amber) {
     };
   });
 
-  return { days, windows, nextWindow: windows[0] ?? null };
+  const first = classified[0];
+  const now = first
+    ? {
+        status: first.status,
+        speedKmh: Math.round(first.speed),
+        directionDeg: Math.round(first.direction),
+        gustKmh: Math.round(first.gust),
+        rain: isRaining(first),
+        phase: first.phase ?? null,
+      }
+    : null;
+  return { now, days, windows, nextWindow: windows[0] ?? null };
 }

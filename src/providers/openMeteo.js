@@ -8,7 +8,7 @@ async function getJson(url, fetchImpl, attempts = 4) {
   let last;
   for (let i = 1; i <= attempts; i++) {
     try {
-      const res = await fetchImpl(url, { signal: AbortSignal.timeout(15000), headers: { 'User-Agent': 'wind-ride (personal project)' } });
+      const res = await fetchImpl(url, { signal: AbortSignal.timeout(15000), headers: { 'User-Agent': 'zephyr-zoom (personal project)' } });
       if (res.ok) return await res.json();
       last = new Error(`HTTP ${res.status}`);
       if (res.status < 500 && res.status !== 429) break; // client errors will not improve on retry

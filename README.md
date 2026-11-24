@@ -1,10 +1,10 @@
-# Ride Wind Outlook
+# Zephyr Zoom
 
-Static page listing known cycling locations, the next day and time with good wind, and a 7-day red/amber/green strip. Links out to Windy for full forecasts. Free to run: GitHub Actions refreshes the data every 3 hours and deploys to GitHub Pages. Forecasts come from [Open-Meteo](https://open-meteo.com) (no key, non-commercial use).
+Mobile-first static page with a card per cycling spot: current wind and rating, the next good-wind window, and a 7-day red/amber/green strip. Tapping a card opens the spot on Windy (zoom 16) for the full forecast. Free to run: GitHub Actions refreshes the data every 3 hours and deploys to GitHub Pages. Forecasts come from [Open-Meteo](https://open-meteo.com) (no key, non-commercial use).
 
 ## Configure
 
-Edit `config/locations.json`. Per location: `lat`, `lon`, optional `windyUrl` (otherwise a windy.com link is generated), and `conditions`:
+Edit `config/locations.json`. Per location: `lat`, `lon`, optional `windyUrl` (otherwise a windy.com link at zoom 16 is generated), and `conditions`:
 
 - `speedMinKmh`: minimum wind speed in km/h. There are no maximums; stronger wind is never penalised.
 - `directions`: list of `[from, to]` degree ranges for where the wind comes from. Ranges may wrap through north, e.g. `[330, 30]`.

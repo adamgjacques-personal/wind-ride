@@ -1,9 +1,9 @@
 {
-  "name": "wind-ride",
+  "name": "zephyr-zoom",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Static web page showing when wind conditions are good for cycling at known locations.",
+  "description": "Zephyr Zoom: when the wind is right for a ride at known spots.",
   "engines": { "node": ">=20" },
   "scripts": {
     "build": "node src/build-data.js",

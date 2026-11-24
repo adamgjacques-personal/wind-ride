@@ -1,4 +1,4 @@
-name: Refresh forecast and deploy to GitHub Pages
+name: Zephyr Zoom - refresh forecast and deploy
 
 on:
   schedule:

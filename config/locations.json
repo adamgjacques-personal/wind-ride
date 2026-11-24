@@ -9,19 +9,6 @@
   },
   "locations": [
     {
-      "id": "sample-spot",
-      "name": "Sample Spot (replace me)",
-      "lat": 51.4411,
-      "lon": -0.2744,
-      "windyUrl": null,
-      "conditions": {
-        "speedMinKmh": 10,
-        "directions": [[200, 250]],
-        "hours": { "start": 7, "end": 19 },
-        "minDurationHours": 2
-      }
-    },
-    {
       "id": "Wyuna-Pitch",
       "name": "Wyuna Pitch",
       "lat": -33.867486,

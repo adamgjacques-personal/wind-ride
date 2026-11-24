@@ -122,3 +122,9 @@ test('window lists the phases it spans, in order, without duplicates', () => {
   const r = evaluateLocation(hours, { ...cond, hours: undefined }, amber);
   assert.deepEqual(r.nextWindow.phases, ['day', 'dusk', 'night']);
 });
+
+test('evaluateLocation reports current conditions from the first hour', () => {
+  const r = evaluateLocation([{ ...hr('2025-06-01T08:00', { speed: 9.4, precip: 0.3 }), phase: 'dawn' }, hr('2025-06-01T09:00')], cond, amber);
+  assert.deepEqual(r.now, { status: AMBER, speedKmh: 9, directionDeg: 225, gustKmh: 25, rain: true, phase: 'dawn' });
+  assert.equal(evaluateLocation([], cond, amber).now, null);
+});
