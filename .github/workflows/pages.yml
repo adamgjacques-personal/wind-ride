@@ -25,8 +25,15 @@ jobs:
         with:
           node-version: 22
       - run: npm test
-      - run: npm run build
-      - uses: actions/configure-pages@v6
+      - id: pages
+        uses: actions/configure-pages@v6
+      # If Open-Meteo is unreachable, redeploy with the last published data so UI changes still ship.
+      - name: Build forecast data
+        run: |
+          if ! npm run build; then
+            echo "::warning::Forecast refresh failed; reusing the last published results.json"
+            curl -fsSL "${{ steps.pages.outputs.base_url }}/results.json" -o site/results.json
+          fi
       - uses: actions/upload-pages-artifact@v5
         with:
           path: site
