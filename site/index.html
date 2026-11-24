@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ride Wind Outlook</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Ride Wind Outlook</h1>
+    <p id="updated" class="muted">Loading…</p>
+  </header>
+  <main>
+    <table id="table" hidden>
+      <thead>
+        <tr><th>Location</th><th>Next good window</th><th>7-day outlook</th><th>Forecast</th></tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <p id="error" class="muted" hidden></p>
+    <p class="legend muted">
+      <span class="dot green"></span> Good
+      <span class="dot amber"></span> Marginal
+      <span class="dot red"></span> Poor
+      &nbsp;·&nbsp; Wind direction is where the wind comes from. Data: Open-Meteo.
+    </p>
+  </main>
+  <script src="app.js" type="module"></script>
+</body>
+</html>

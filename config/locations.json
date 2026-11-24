@@ -1,0 +1,25 @@
+{
+  "_note": "SAMPLE DATA. Replace with your real locations and conditions. Speeds and gusts are km/h, directions are degrees (0 = north, 90 = east) describing where the wind comes FROM. A direction range may wrap through north, e.g. [330, 30].",
+  "defaults": {
+    "forecastDays": 7,
+    "amber": { "speedMarginPct": 15, "directionMarginDeg": 20, "gustMarginPct": 15, "precipMarginMm": 0.5 }
+  },
+  "locations": [
+    {
+      "id": "sample-spot",
+      "name": "Sample Spot (replace me)",
+      "lat": 51.4411,
+      "lon": -0.2744,
+      "windyUrl": null,
+      "conditions": {
+        "speedMinKmh": 10,
+        "speedMaxKmh": 25,
+        "directions": [[200, 250]],
+        "gustMaxKmh": 35,
+        "hours": { "start": 7, "end": 19 },
+        "maxPrecipMm": 0.2,
+        "minDurationHours": 2
+      }
+    }
+  ]
+}

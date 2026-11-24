@@ -1,0 +1,4 @@
+node_modules/
+.DS_Store
+# Generated at build time; the workflow produces it on every run.
+site/results.json
