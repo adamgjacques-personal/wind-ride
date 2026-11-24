@@ -6,16 +6,21 @@
   <title>Zephyr Zoom</title>
   <meta name="description" content="When the wind is right for a ride at your spots.">
   <meta name="theme-color" content="#f4f6fb" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌬️</text></svg>">
+  <meta name="theme-color" content="#12304f" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/png" sizes="48x48" href="img/favicon-48.png">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="apple-mobile-web-app-title" content="Zephyr Zoom">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="top">
-    <div class="brand">
-      <svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h10a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      <h1>Zephyr Zoom</h1>
-    </div>
+    <h1 class="brand">
+      <picture>
+        <source srcset="img/logo-dark.png" media="(prefers-color-scheme: dark)">
+        <img src="img/logo-light.png" alt="Zephyr Zoom" width="620" height="220">
+      </picture>
+    </h1>
     <p class="tagline">Put the wind at your back and chase that Strava Crown!</p>
     <p id="updated" class="updated">Loading…</p>
   </header>
