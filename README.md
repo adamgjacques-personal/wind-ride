@@ -15,6 +15,8 @@ Status per hour: green = speed and direction met, amber = one slightly outside (
 
 Rain is display-only: a rain icon shows when it is raining now at the location, and on the next window or a day when any rain is forecast in it. It never changes the rating.
 
+Time of day is also display-only. The next window shows icons for the phases it spans: 🌅 dawn, ☀️ daytime, 🌇 dusk, 🌙 dark. Each hourly slot is judged at its midpoint using Open-Meteo sunrise and sunset: within 45 minutes of sunrise is dawn, within 45 minutes of sunset is dusk, between them is day, otherwise dark. Use `hours` if you want to exclude dark hours from the rating itself.
+
 ## Run locally
 
     npm test

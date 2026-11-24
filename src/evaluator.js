@@ -55,6 +55,24 @@ export function isRaining(hour) {
   return hour != null && hour.precip > 0;
 }
 
+const toMinutes = (t) => Number(t.slice(11, 13)) * 60 + Number(t.slice(14, 16));
+const TWILIGHT_MIN = 45;
+
+/**
+ * Time-of-day phase for an hourly slot, judged at the slot's midpoint (local time).
+ * dawn/dusk = within 45 minutes either side of sunrise/sunset; day = between; night = otherwise.
+ * sun: { sunrise, sunset } as 'YYYY-MM-DDTHH:MM'. Missing sun times (polar regions) count as day.
+ */
+export function dayPhase(time, sun) {
+  if (!sun?.sunrise || !sun?.sunset) return 'day';
+  const mid = Number(time.slice(11, 13)) * 60 + 30;
+  const rise = toMinutes(sun.sunrise);
+  const set = toMinutes(sun.sunset);
+  if (Math.abs(mid - rise) <= TWILIGHT_MIN) return 'dawn';
+  if (Math.abs(mid - set) <= TWILIGHT_MIN) return 'dusk';
+  return mid > rise && mid < set ? 'day' : 'night';
+}
+
 /** Merge consecutive green hours (same day) into windows of at least minDurationHours. */
 export function buildWindows(classified, minDurationHours) {
   const windows = [];
@@ -89,6 +107,7 @@ function summariseRun(run) {
     avgDirectionDeg: meanDirection(run.map((h) => h.direction)),
     maxGustKmh: Math.round(Math.max(...run.map((h) => h.gust))),
     rain: run.some(isRaining),
+    phases: [...new Set(run.map((h) => h.phase).filter(Boolean))],
   };
 }
 

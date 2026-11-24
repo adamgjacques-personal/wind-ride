@@ -2,6 +2,7 @@
 
 const COMPASS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
 const compass = (deg) => COMPASS[Math.round(deg / 22.5) % 16];
+const PHASE = { dawn: ['🌅', 'dawn'], day: ['☀️', 'daytime'], dusk: ['🌇', 'dusk'], night: ['🌙', 'dark'] };
 const DAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 // Dates are 'YYYY-MM-DD' / 'YYYY-MM-DDTHH:00' in the location's local time; avoid Date parsing to dodge timezone shifts.
@@ -36,7 +37,11 @@ function renderRow(loc) {
   if (loc.error) next.append(el('span', { className: 'err' }, 'Forecast unavailable'));
   else if (loc.nextWindow) {
     const w = loc.nextWindow;
-    next.append(el('strong', {}, formatWindow(w) + (w.rain ? ' 🌧' : '')));
+    const phases = (w.phases ?? []).filter((p) => PHASE[p]);
+    const icons = phases.map((p) => PHASE[p][0]).join('');
+    const strong = el('strong', {}, formatWindow(w) + (w.rain ? ' 🌧' : '') + (icons ? ` ${icons}` : ''));
+    if (phases.length) strong.title = phases.map((p) => PHASE[p][1]).join(' → ');
+    next.append(strong);
     next.append(el('span', { className: 'win-detail' }, `~${w.avgSpeedKmh} km/h from ${compass(w.avgDirectionDeg)}, gusts ${w.maxGustKmh}${w.rain ? ', rain expected' : ''}`));
   } else next.append(document.createTextNode('None in forecast'));
   tr.append(next);

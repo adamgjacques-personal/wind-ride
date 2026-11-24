@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  isRaining, angularDistance, distanceToRange, classifyHour, buildWindows, evaluateLocation, meanDirection, GREEN, AMBER, RED,
+  dayPhase, isRaining, angularDistance, distanceToRange, classifyHour, buildWindows, evaluateLocation, meanDirection, GREEN, AMBER, RED,
 } from '../src/evaluator.js';
 
 const amber = { speedMarginPct: 15, directionMarginDeg: 20 };
@@ -104,4 +104,21 @@ test('evaluateLocation: green day, amber day (short window), red day, nextWindow
 test('evaluateLocation: no windows gives null nextWindow', () => {
   const r = evaluateLocation([hr('2025-06-01T08:00', { speed: 2 })], cond, amber);
   assert.equal(r.nextWindow, null);
+});
+
+test('dayPhase classifies dawn, day, dusk, night around sunrise/sunset', () => {
+  const sun = { sunrise: '2025-06-01T06:30', sunset: '2025-06-01T17:30' };
+  assert.equal(dayPhase('2025-06-01T03:00', sun), 'night');
+  assert.equal(dayPhase('2025-06-01T06:00', sun), 'dawn'); // midpoint 06:30
+  assert.equal(dayPhase('2025-06-01T07:00', sun), 'day'); // midpoint 07:30, 60 min after sunrise
+  assert.equal(dayPhase('2025-06-01T12:00', sun), 'day');
+  assert.equal(dayPhase('2025-06-01T17:00', sun), 'dusk');
+  assert.equal(dayPhase('2025-06-01T21:00', sun), 'night');
+  assert.equal(dayPhase('2025-06-01T12:00', undefined), 'day');
+});
+
+test('window lists the phases it spans, in order, without duplicates', () => {
+  const hours = ['16:00', '17:00', '18:00'].map((t, i) => ({ ...hr(`2025-06-01T${t}`), phase: ['day', 'dusk', 'night'][i] }));
+  const r = evaluateLocation(hours, { ...cond, hours: undefined }, amber);
+  assert.deepEqual(r.nextWindow.phases, ['day', 'dusk', 'night']);
 });

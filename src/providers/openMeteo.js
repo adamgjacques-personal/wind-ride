@@ -7,6 +7,7 @@ export async function fetchForecast({ lat, lon }, forecastDays = 7, fetchImpl = 
     longitude: String(lon),
     hourly: 'wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation',
     wind_speed_unit: 'kmh',
+    daily: 'sunrise,sunset',
     timezone: 'auto',
     forecast_days: String(forecastDays),
   });
@@ -21,7 +22,8 @@ export async function fetchForecast({ lat, lon }, forecastDays = 7, fetchImpl = 
     gust: h.wind_gusts_10m[i],
     precip: h.precipitation[i],
   }));
+  const sun = Object.fromEntries(json.daily.time.map((d, i) => [d, { sunrise: json.daily.sunrise[i], sunset: json.daily.sunset[i] }]));
   // Local "now" at the location, as 'YYYY-MM-DDTHH:00'.
   const localNow = new Date(Date.now() + json.utc_offset_seconds * 1000).toISOString().slice(0, 13) + ':00';
-  return { hours, localNow, timezone: json.timezone };
+  return { hours, sun, localNow, timezone: json.timezone };
 }

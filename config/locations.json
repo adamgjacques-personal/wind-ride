@@ -1,5 +1,5 @@
 {
-  "_note": "Speeds are km/h (minimums only), directions are degrees (0 = north, 90 = east) for where the wind comes FROM. A direction range may wrap through north, e.g. [330, 30]. 'hours' is optional (default all day). Rain is shown as an icon only and never changes the rating.",
+  "_note": "Speeds are km/h (minimums only), directions are degrees (0 = north, 90 = east) for where the wind comes FROM. A direction range may wrap through north, e.g. [330, 30]. 'hours' is optional (default all day). Rain and time of day (dawn/day/dusk/night) are shown as icons only and never change the rating.",
   "defaults": {
     "forecastDays": 7,
     "amber": {
@@ -30,6 +30,18 @@
       "conditions": {
         "speedMinKmh": 10,
         "directions": [[140, 220]],
+        "minDurationHours": 1
+      }
+    },
+    {
+      "id": "Blair-St-Unhappy-Ending",
+      "name": "Blair St Unhappy Ending",
+      "lat": -33.885634,
+      "lon": 151.279439,
+      "windyUrl": null,
+      "conditions": {
+        "speedMinKmh": 15,
+        "directions": [[240, 280]],
         "minDurationHours": 1
       }
     }

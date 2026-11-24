@@ -3,7 +3,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fetchForecast } from './providers/openMeteo.js';
-import { evaluateLocation, isRaining } from './evaluator.js';
+import { evaluateLocation, isRaining, dayPhase } from './evaluator.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -34,8 +34,10 @@ async function main() {
   for (const loc of config.locations) {
     validateLocation(loc);
     try {
-      const { hours, localNow } = await fetchForecast(loc, forecastDays);
-      const upcoming = hours.filter((h) => h.time >= localNow);
+      const { hours, sun, localNow } = await fetchForecast(loc, forecastDays);
+      const upcoming = hours
+        .filter((h) => h.time >= localNow)
+        .map((h) => ({ ...h, phase: dayPhase(h.time, sun[h.time.slice(0, 10)]) }));
       const raining = isRaining(upcoming[0]);
       const result = evaluateLocation(upcoming, loc.conditions, { ...amber, ...loc.amber });
       out.push({ id: loc.id, name: loc.name, windyUrl: windyLink(loc), raining, nextWindow: result.nextWindow, days: result.days, error: null });
