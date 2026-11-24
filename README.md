@@ -7,11 +7,12 @@ Mobile-first static page with a card per cycling spot: current wind and rating, 
 Edit `config/locations.json`. Per location: `lat`, `lon`, optional `windyUrl` (otherwise a windy.com link at zoom 16 is generated), and `conditions`:
 
 - `speedMinKmh`: minimum wind speed in km/h. There are no maximums; stronger wind is never penalised.
+- `greatMarginKmh` (optional, default from `defaults.greatMarginKmh`, 10): how far above the minimum counts as great.
 - `directions`: list of `[from, to]` degree ranges for where the wind comes from. Ranges may wrap through north, e.g. `[330, 30]`.
 - `hours` (optional, default all day): `{ "start": 7, "end": 19 }` local riding hours (end is exclusive).
 - `minDurationHours`: consecutive good hours needed for a window.
 
-Status per hour: green = speed and direction met, amber = one slightly outside (margins in `defaults.amber`, overridable per location with an `amber` block), red = otherwise. A day is green only if it has a window of at least `minDurationHours`.
+Status per hour: purple (great) = direction met and speed at least minimum + `greatMarginKmh`, green = speed and direction met, amber = one slightly outside (margins in `defaults.amber`, overridable per location with an `amber` block), red = otherwise. A day is green only if it has a window of at least `minDurationHours`, and purple if it has a run of great hours that long. Great hours count towards good windows; a window is tagged Great if it contains such a run.
 
 Rain is display-only: a rain icon shows when it is raining now at the location, and on the next window or a day when any rain is forecast in it. It never changes the rating.
 

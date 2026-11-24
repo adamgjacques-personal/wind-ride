@@ -1,7 +1,8 @@
 {
-  "_note": "Speeds are km/h (minimums only), directions are degrees (0 = north, 90 = east) for where the wind comes FROM. A direction range may wrap through north, e.g. [330, 30]. 'hours' is optional (default all day). Rain and time of day (dawn/day/dusk/night) are shown as icons only and never change the rating.",
+  "_note": "Speeds are km/h (minimums only; 'great' = minimum + greatMarginKmh, overridable per spot in conditions), directions are degrees (0 = north, 90 = east) for where the wind comes FROM. A direction range may wrap through north, e.g. [330, 30]. 'hours' is optional (default all day). Rain and time of day (dawn/day/dusk/night) are shown as icons only and never change the rating.",
   "defaults": {
     "forecastDays": 7,
+    "greatMarginKmh": 10,
     "amber": {
       "speedMarginPct": 15,
       "directionMarginDeg": 20
@@ -15,7 +16,7 @@
       "lon": 151.253329,
       "windyUrl": null,
       "conditions": {
-        "speedMinKmh": 10,
+        "speedMinKmh": 15,
         "directions": [[140, 220]],
         "minDurationHours": 1
       }
@@ -29,6 +30,18 @@
       "conditions": {
         "speedMinKmh": 15,
         "directions": [[240, 280]],
+        "minDurationHours": 1
+      }
+    },
+    {
+      "id": "Howe-St-Pitch",
+      "name": "Howe St Pitch",
+      "lat": -33.968533,
+      "lon": 151.253039,
+      "windyUrl": null,
+      "conditions": {
+        "speedMinKmh": 15,
+        "directions": [[20, 80]],
         "minDurationHours": 1
       }
     }

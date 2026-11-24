@@ -29,6 +29,7 @@ async function main() {
   const config = JSON.parse(await readFile(join(root, 'config/locations.json'), 'utf8'));
   const forecastDays = config.defaults?.forecastDays ?? 7;
   const amber = config.defaults?.amber;
+  const greatMarginKmh = config.defaults?.greatMarginKmh;
   const out = [];
 
   for (const loc of config.locations) {
@@ -38,7 +39,7 @@ async function main() {
       const upcoming = hours
         .filter((h) => h.time >= localNow)
         .map((h) => ({ ...h, phase: dayPhase(h.time, sun[h.time.slice(0, 10)]) }));
-      const result = evaluateLocation(upcoming, loc.conditions, { ...amber, ...loc.amber });
+      const result = evaluateLocation(upcoming, { greatMarginKmh, ...loc.conditions }, { ...amber, ...loc.amber });
       out.push({ id: loc.id, name: loc.name, windyUrl: windyLink(loc), now: result.now, nextWindow: result.nextWindow, days: result.days, error: null });
     } catch (err) {
       // One failing location should not blank the whole page.

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  dayPhase, isRaining, angularDistance, distanceToRange, classifyHour, buildWindows, evaluateLocation, meanDirection, GREEN, AMBER, RED,
+  dayPhase, isRaining, angularDistance, distanceToRange, classifyHour, buildWindows, evaluateLocation, meanDirection, GREEN, AMBER, RED, GREAT,
 } from '../src/evaluator.js';
 
 const amber = { speedMarginPct: 15, directionMarginDeg: 20 };
@@ -33,7 +33,7 @@ test('classifyHour: green when all conditions met', () => {
 });
 
 test('classifyHour: speed is minimum-only; strong wind is never penalised', () => {
-  assert.equal(classifyHour(hr('2025-06-01T10:00', { speed: 80, gust: 120 }), cond, amber), GREEN);
+  assert.equal(classifyHour(hr('2025-06-01T10:00', { speed: 80, gust: 120 }), cond, amber), GREAT);
   assert.equal(classifyHour(hr('2025-06-01T10:00', { speed: 9 }), cond, amber), AMBER); // 1 below, margin 1.5
   assert.equal(classifyHour(hr('2025-06-01T10:00', { speed: 5 }), cond, amber), RED);
 });
@@ -127,4 +127,24 @@ test('evaluateLocation reports current conditions from the first hour', () => {
   const r = evaluateLocation([{ ...hr('2025-06-01T08:00', { speed: 9.4, precip: 0.3 }), phase: 'dawn' }, hr('2025-06-01T09:00')], cond, amber);
   assert.deepEqual(r.now, { status: AMBER, speedKmh: 9, directionDeg: 225, gustKmh: 25, rain: true, phase: 'dawn' });
   assert.equal(evaluateLocation([], cond, amber).now, null);
+});
+
+test('great: direction met and speed at least min + margin (default 10)', () => {
+  assert.equal(classifyHour(hr('2025-06-01T10:00', { speed: 19.9 }), cond, amber), GREEN);
+  assert.equal(classifyHour(hr('2025-06-01T10:00', { speed: 20 }), cond, amber), GREAT);
+  assert.equal(classifyHour(hr('2025-06-01T10:00', { speed: 30, direction: 265 }), cond, amber), AMBER); // direction off: not great
+  assert.equal(classifyHour(hr('2025-06-01T10:00', { speed: 16 }), { ...cond, greatMarginKmh: 5 }, amber), GREAT);
+});
+
+test('great hours count towards good windows; day and window marked great', () => {
+  const hours = [
+    hr('2025-06-01T08:00', { speed: 12 }), hr('2025-06-01T09:00', { speed: 22 }), hr('2025-06-01T10:00', { speed: 23 }), // good window with 2 great hours
+    hr('2025-06-02T08:00', { speed: 12 }), hr('2025-06-02T09:00', { speed: 22 }), hr('2025-06-02T10:00', { speed: 12 }), // only 1 great hour (< min 2)
+  ];
+  const r = evaluateLocation(hours, cond, amber);
+  assert.equal(r.windows.length, 2);
+  assert.equal(r.windows[0].end, '2025-06-01T11:00');
+  assert.equal(r.windows[0].great, true);
+  assert.equal(r.windows[1].great, false);
+  assert.deepEqual(r.days.map((d) => d.status), [GREAT, GREEN]);
 });

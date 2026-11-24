@@ -4,7 +4,7 @@ const COMPASS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', '
 const compass = (deg) => COMPASS[Math.round(deg / 22.5) % 16];
 const DAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const PHASE = { dawn: ['🌅', 'dawn'], day: ['☀️', 'daytime'], dusk: ['🌇', 'dusk'], night: ['🌙', 'dark'] };
-const NOW_LABEL = { green: 'Good now', amber: 'Marginal now', red: 'Poor now' };
+const NOW_LABEL = { great: 'Great now', green: 'Good now', amber: 'Marginal now', red: 'Poor now' };
 
 // Dates are 'YYYY-MM-DD' / 'YYYY-MM-DDTHH:00' in the location's local time; avoid Date parsing to dodge timezone shifts.
 function dayIndex(date) {
@@ -61,11 +61,12 @@ const safeUrl = (u) => (/^https:\/\//.test(u) ? u : null);
 function renderCard(loc) {
   const li = el('li', 'card');
   const url = safeUrl(loc.windyUrl);
-  const a = el(url ? 'a' : 'div');
+  const a = el(url ? 'a' : 'div', 'card-body');
   if (url) {
     a.href = url;
     a.target = '_blank';
     a.rel = 'noopener noreferrer';
+    a.setAttribute('aria-label', `${loc.name}: open full forecast on Windy`);
   }
   li.append(a);
 
@@ -89,8 +90,10 @@ function renderCard(loc) {
 
     // Next good window
     const next = el('div', 'next');
-    next.append(el('div', 'next-label', 'Next good wind'));
     const w = loc.nextWindow;
+    const label = el('div', 'next-label', 'Next good wind');
+    if (w?.great) label.append(el('span', 'tag great', 'Great'));
+    next.append(label);
     if (w) {
       const today = loc.days[0]?.date;
       const when = el('div', 'next-when', `${relativeDay(w.start.slice(0, 10), today)} · ${w.start.slice(11, 16)}–${w.end.slice(11, 16)}`);
@@ -116,7 +119,6 @@ function renderCard(loc) {
     a.append(days);
   }
 
-  if (url) a.append(el('div', 'card-foot', 'Open in Windy ↗'));
   return li;
 }
 

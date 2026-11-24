@@ -3,8 +3,13 @@
 export const GREEN = 'green';
 export const AMBER = 'amber';
 export const RED = 'red';
+export const GREAT = 'great';
 
-const RANK = { [RED]: 0, [AMBER]: 1, [GREEN]: 2 };
+const RANK = { [RED]: 0, [AMBER]: 1, [GREEN]: 2, [GREAT]: 3 };
+const DEFAULT_GREAT_MARGIN_KMH = 10;
+
+/** Good enough to ride: green or great. */
+export const isGood = (status) => status === GREEN || status === GREAT;
 
 export function worst(a, b) {
   return RANK[a] <= RANK[b] ? a : b;
@@ -47,7 +52,11 @@ export function classifyHour(hour, conditions, amber) {
   let status = minStatus(hour.speed, conditions.speedMinKmh, amber.speedMarginPct);
 
   const dirMiss = Math.min(...conditions.directions.map((r) => distanceToRange(hour.direction, r)));
-  return worst(status, dirMiss === 0 ? GREEN : dirMiss <= amber.directionMarginDeg ? AMBER : RED);
+  status = worst(status, dirMiss === 0 ? GREEN : dirMiss <= amber.directionMarginDeg ? AMBER : RED);
+
+  // Great: everything met and speed at least greatMarginKmh above the minimum.
+  const greatAt = conditions.speedMinKmh + (conditions.greatMarginKmh ?? DEFAULT_GREAT_MARGIN_KMH);
+  return status === GREEN && hour.speed >= greatAt ? GREAT : status;
 }
 
 /** Rain is display-only and never affects the status. */
@@ -73,8 +82,8 @@ export function dayPhase(time, sun) {
   return mid > rise && mid < set ? 'day' : 'night';
 }
 
-/** Merge consecutive green hours (same day) into windows of at least minDurationHours. */
-export function buildWindows(classified, minDurationHours) {
+/** Merge consecutive matching hours (same day) into windows of at least minDurationHours. Default match: green or great. */
+export function buildWindows(classified, minDurationHours, match = isGood) {
   const windows = [];
   let run = [];
   const flush = () => {
@@ -85,7 +94,7 @@ export function buildWindows(classified, minDurationHours) {
     const prev = run[run.length - 1];
     const contiguous =
       prev && prev.time.slice(0, 10) === h.time.slice(0, 10) && Number(h.time.slice(11, 13)) === Number(prev.time.slice(11, 13)) + 1;
-    if (h.status === GREEN) {
+    if (match(h.status)) {
       if (prev && !contiguous) flush();
       run.push(h);
     } else {
@@ -126,7 +135,13 @@ export function meanDirection(degs) {
  */
 export function evaluateLocation(hours, conditions, amber) {
   const classified = hours.map((h) => ({ ...h, status: classifyHour(h, conditions, amber) }));
-  const windows = buildWindows(classified, conditions.minDurationHours ?? 1);
+  const minDur = conditions.minDurationHours ?? 1;
+  const greatWindows = buildWindows(classified, minDur, (st) => st === GREAT);
+  // A good window is "great" if it contains a run of great hours at least minDurationHours long.
+  const windows = buildWindows(classified, minDur).map((w) => ({
+    ...w,
+    great: greatWindows.some((g) => g.start >= w.start && g.start < w.end),
+  }));
 
   const byDate = new Map();
   for (const h of classified) {
@@ -136,10 +151,10 @@ export function evaluateLocation(hours, conditions, amber) {
   }
 
   const days = [...byDate.entries()].map(([date, list]) => {
-    const hasWindow = windows.some((w) => w.start.slice(0, 10) === date);
+    const dayWindows = windows.filter((w) => w.start.slice(0, 10) === date);
     const bestStatus = list.reduce((s, h) => best(s, h.status), RED);
-    // A green day needs a long-enough window; otherwise cap at amber.
-    const status = hasWindow ? GREEN : bestStatus === GREEN ? AMBER : bestStatus;
+    // A green/great day needs a long-enough window; otherwise cap at amber.
+    const status = dayWindows.some((w) => w.great) ? GREAT : dayWindows.length ? GREEN : isGood(bestStatus) ? AMBER : bestStatus;
     const rep = list.find((h) => h.status === bestStatus) ?? list[0];
     return {
       date,
