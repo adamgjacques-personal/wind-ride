@@ -16,7 +16,17 @@
       <svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h10a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       <h1>Zephyr Zoom</h1>
     </div>
+    <p class="tagline">Put the wind at your back and chase that Strava Crown!</p>
     <p id="updated" class="updated">Loading…</p>
+  </header>
+
+  <main>
+    <p id="summary" class="summary" hidden></p>
+    <ul id="spots" class="spots" aria-live="polite">
+      <li class="card skeleton" aria-hidden="true"></li>
+      <li class="card skeleton" aria-hidden="true"></li>
+    </ul>
+    <p id="error" class="error" hidden></p>
     <details class="info">
       <summary>Info</summary>
       <div class="legend">
@@ -29,15 +39,6 @@
         <p>Tap a spot for the full forecast on Windy. Forecast data from Open-Meteo.</p>
       </div>
     </details>
-  </header>
-
-  <main>
-    <p id="summary" class="summary" hidden></p>
-    <ul id="spots" class="spots" aria-live="polite">
-      <li class="card skeleton" aria-hidden="true"></li>
-      <li class="card skeleton" aria-hidden="true"></li>
-    </ul>
-    <p id="error" class="error" hidden></p>
   </main>
 
 
