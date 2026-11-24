@@ -1,13 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  angularDistance, distanceToRange, classifyHour, buildWindows, evaluateLocation, meanDirection, GREEN, AMBER, RED,
+  isRaining, angularDistance, distanceToRange, classifyHour, buildWindows, evaluateLocation, meanDirection, GREEN, AMBER, RED,
 } from '../src/evaluator.js';
 
-const amber = { speedMarginPct: 15, directionMarginDeg: 20, gustMarginPct: 15, precipMarginMm: 0.5 };
+const amber = { speedMarginPct: 15, directionMarginDeg: 20 };
 const cond = {
-  speedMinKmh: 10, speedMaxKmh: 25, directions: [[200, 250]], gustMaxKmh: 35,
-  hours: { start: 7, end: 19 }, maxPrecipMm: 0.2, minDurationHours: 2,
+  speedMinKmh: 10, directions: [[200, 250]],
+  hours: { start: 7, end: 19 }, minDurationHours: 2,
 };
 const hr = (time, o = {}) => ({ time, speed: 15, direction: 225, gust: 25, precip: 0, ...o });
 
@@ -32,14 +32,31 @@ test('classifyHour: green when all conditions met', () => {
   assert.equal(classifyHour(hr('2025-06-01T10:00'), cond, amber), GREEN);
 });
 
-test('classifyHour: amber within margins, red beyond', () => {
-  assert.equal(classifyHour(hr('2025-06-01T10:00', { speed: 28 }), cond, amber), AMBER); // 3 over, margin 3.75
-  assert.equal(classifyHour(hr('2025-06-01T10:00', { speed: 40 }), cond, amber), RED);
+test('classifyHour: speed is minimum-only; strong wind is never penalised', () => {
+  assert.equal(classifyHour(hr('2025-06-01T10:00', { speed: 80, gust: 120 }), cond, amber), GREEN);
+  assert.equal(classifyHour(hr('2025-06-01T10:00', { speed: 9 }), cond, amber), AMBER); // 1 below, margin 1.5
+  assert.equal(classifyHour(hr('2025-06-01T10:00', { speed: 5 }), cond, amber), RED);
+});
+
+test('classifyHour: direction amber within margin, red beyond', () => {
   assert.equal(classifyHour(hr('2025-06-01T10:00', { direction: 265 }), cond, amber), AMBER);
   assert.equal(classifyHour(hr('2025-06-01T10:00', { direction: 300 }), cond, amber), RED);
-  assert.equal(classifyHour(hr('2025-06-01T10:00', { gust: 38 }), cond, amber), AMBER);
-  assert.equal(classifyHour(hr('2025-06-01T10:00', { precip: 0.5 }), cond, amber), AMBER);
-  assert.equal(classifyHour(hr('2025-06-01T10:00', { precip: 3 }), cond, amber), RED);
+});
+
+test('rain never affects status and is flagged separately', () => {
+  assert.equal(classifyHour(hr('2025-06-01T10:00', { precip: 5 }), cond, amber), GREEN);
+  assert.equal(isRaining(hr('2025-06-01T10:00', { precip: 0.1 })), true);
+  assert.equal(isRaining(hr('2025-06-01T10:00', { precip: 0 })), false);
+  assert.equal(isRaining(undefined), false);
+  const r = evaluateLocation([hr('2025-06-01T08:00', { precip: 1 }), hr('2025-06-01T09:00')], cond, amber);
+  assert.equal(r.nextWindow.rain, true);
+  assert.equal(r.days[0].rain, true);
+});
+
+test('hours is optional and defaults to all day', () => {
+  const noHours = { speedMinKmh: 10, directions: [[200, 250]], minDurationHours: 1 };
+  assert.equal(classifyHour(hr('2025-06-01T02:00'), noHours, amber), GREEN);
+  assert.equal(classifyHour(hr('2025-06-01T23:00'), noHours, amber), GREEN);
 });
 
 test('classifyHour: outside riding hours is red; end hour is exclusive', () => {
@@ -73,9 +90,9 @@ test('buildWindows does not join across a gap or midnight', () => {
 
 test('evaluateLocation: green day, amber day (short window), red day, nextWindow', () => {
   const hours = [
-    hr('2025-06-01T08:00', { speed: 40 }), hr('2025-06-01T09:00', { speed: 40 }), // red day
+    hr('2025-06-01T08:00', { speed: 2 }), hr('2025-06-01T09:00', { speed: 2 }), // red day
     hr('2025-06-02T08:00'), // one green hour only -> amber day
-    hr('2025-06-02T09:00', { speed: 40 }),
+    hr('2025-06-02T09:00', { speed: 2 }),
     hr('2025-06-03T08:00'), hr('2025-06-03T09:00'), hr('2025-06-03T10:00'), // green day
   ];
   const r = evaluateLocation(hours, cond, amber);
@@ -85,6 +102,6 @@ test('evaluateLocation: green day, amber day (short window), red day, nextWindow
 });
 
 test('evaluateLocation: no windows gives null nextWindow', () => {
-  const r = evaluateLocation([hr('2025-06-01T08:00', { speed: 50 })], cond, amber);
+  const r = evaluateLocation([hr('2025-06-01T08:00', { speed: 2 })], cond, amber);
   assert.equal(r.nextWindow, null);
 });

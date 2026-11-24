@@ -6,12 +6,14 @@ Static page listing known cycling locations, the next day and time with good win
 
 Edit `config/locations.json`. Per location: `lat`, `lon`, optional `windyUrl` (otherwise a windy.com link is generated), and `conditions`:
 
-- `speedMinKmh`, `speedMaxKmh`, `gustMaxKmh`: km/h.
+- `speedMinKmh`: minimum wind speed in km/h. There are no maximums; stronger wind is never penalised.
 - `directions`: list of `[from, to]` degree ranges for where the wind comes from. Ranges may wrap through north, e.g. `[330, 30]`.
-- `hours`: `{ "start": 7, "end": 19 }` local riding hours (end is exclusive).
-- `maxPrecipMm`: per hour. `minDurationHours`: consecutive good hours needed for a window.
+- `hours` (optional, default all day): `{ "start": 7, "end": 19 }` local riding hours (end is exclusive).
+- `minDurationHours`: consecutive good hours needed for a window.
 
-Status per hour: green = all conditions met, amber = one condition slightly outside (margins in `defaults.amber`, overridable per location with an `amber` block), red = otherwise. A day is green only if it has a window of at least `minDurationHours`.
+Status per hour: green = speed and direction met, amber = one slightly outside (margins in `defaults.amber`, overridable per location with an `amber` block), red = otherwise. A day is green only if it has a window of at least `minDurationHours`.
+
+Rain is display-only: a rain icon shows when it is raining now at the location, and on the next window or a day when any rain is forecast in it. It never changes the rating.
 
 ## Run locally
 

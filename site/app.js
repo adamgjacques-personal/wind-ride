@@ -23,21 +23,28 @@ const safeUrl = (u) => (/^https:\/\//.test(u) ? u : null);
 
 function renderRow(loc) {
   const tr = el('tr');
-  tr.append(el('td', {}, loc.name));
+  const nameCell = el('td', {}, loc.name);
+  if (loc.raining) {
+    const rain = el('span', { className: 'rain' }, ' 🌧');
+    rain.title = 'Raining now';
+    rain.setAttribute('aria-label', 'Raining now');
+    nameCell.append(rain);
+  }
+  tr.append(nameCell);
 
   const next = el('td');
   if (loc.error) next.append(el('span', { className: 'err' }, 'Forecast unavailable'));
   else if (loc.nextWindow) {
     const w = loc.nextWindow;
-    next.append(el('strong', {}, formatWindow(w)));
-    next.append(el('span', { className: 'win-detail' }, `~${w.avgSpeedKmh} km/h from ${compass(w.avgDirectionDeg)}, gusts ${w.maxGustKmh}`));
+    next.append(el('strong', {}, formatWindow(w) + (w.rain ? ' 🌧' : '')));
+    next.append(el('span', { className: 'win-detail' }, `~${w.avgSpeedKmh} km/h from ${compass(w.avgDirectionDeg)}, gusts ${w.maxGustKmh}${w.rain ? ', rain expected' : ''}`));
   } else next.append(document.createTextNode('None in forecast'));
   tr.append(next);
 
   const strip = el('div', { className: 'strip' });
   for (const d of loc.days) {
     const cell = el('div', { className: `cell ${d.status}` }, dayName(d.date).slice(0, 2));
-    cell.title = `${dayName(d.date)} ${d.date}: ${d.status}. ~${d.speedKmh} km/h from ${compass(d.directionDeg)}, gusts ${d.gustKmh}`;
+    cell.title = `${dayName(d.date)} ${d.date}: ${d.status}. ~${d.speedKmh} km/h from ${compass(d.directionDeg)}, gusts ${d.gustKmh}${d.rain ? ', rain' : ''}`;
     strip.append(cell);
   }
   tr.append(el('td').appendChild(strip).parentNode);

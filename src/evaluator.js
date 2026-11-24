@@ -29,11 +29,10 @@ export function distanceToRange(deg, [from, to]) {
   return Math.min(angularDistance(d, f), angularDistance(d, t));
 }
 
-function rangeStatus(value, min, max, marginPct) {
-  if (value >= min && value <= max) return GREEN;
-  const miss = value < min ? min - value : value - max;
-  const bound = value < min ? min : max;
-  return miss <= (bound * marginPct) / 100 ? AMBER : RED;
+/** Minimum-only check: green at or above min, amber within marginPct below it, otherwise red. */
+function minStatus(value, min, marginPct) {
+  if (value >= min) return GREEN;
+  return min - value <= (min * marginPct) / 100 ? AMBER : RED;
 }
 
 /**
@@ -41,34 +40,19 @@ function rangeStatus(value, min, max, marginPct) {
  * hour: { time: 'YYYY-MM-DDTHH:00', speed, direction, gust, precip }
  */
 export function classifyHour(hour, conditions, amber) {
+  const { start, end } = conditions.hours ?? { start: 0, end: 24 };
   const h = Number(hour.time.slice(11, 13));
-  if (h < conditions.hours.start || h >= conditions.hours.end) return RED;
+  if (h < start || h >= end) return RED;
 
-  let status = rangeStatus(hour.speed, conditions.speedMinKmh, conditions.speedMaxKmh, amber.speedMarginPct);
+  let status = minStatus(hour.speed, conditions.speedMinKmh, amber.speedMarginPct);
 
   const dirMiss = Math.min(...conditions.directions.map((r) => distanceToRange(hour.direction, r)));
-  status = worst(status, dirMiss === 0 ? GREEN : dirMiss <= amber.directionMarginDeg ? AMBER : RED);
+  return worst(status, dirMiss === 0 ? GREEN : dirMiss <= amber.directionMarginDeg ? AMBER : RED);
+}
 
-  if (conditions.gustMaxKmh != null) {
-    const g = hour.gust;
-    status = worst(
-      status,
-      g <= conditions.gustMaxKmh
-        ? GREEN
-        : g <= conditions.gustMaxKmh * (1 + amber.gustMarginPct / 100)
-          ? AMBER
-          : RED,
-    );
-  }
-
-  if (conditions.maxPrecipMm != null) {
-    const p = hour.precip;
-    status = worst(
-      status,
-      p <= conditions.maxPrecipMm ? GREEN : p <= conditions.maxPrecipMm + amber.precipMarginMm ? AMBER : RED,
-    );
-  }
-  return status;
+/** Rain is display-only and never affects the status. */
+export function isRaining(hour) {
+  return hour != null && hour.precip > 0;
 }
 
 /** Merge consecutive green hours (same day) into windows of at least minDurationHours. */
@@ -104,6 +88,7 @@ function summariseRun(run) {
     avgSpeedKmh: Math.round(avg('speed')),
     avgDirectionDeg: meanDirection(run.map((h) => h.direction)),
     maxGustKmh: Math.round(Math.max(...run.map((h) => h.gust))),
+    rain: run.some(isRaining),
   };
 }
 
@@ -118,7 +103,7 @@ export function meanDirection(degs) {
 /**
  * Evaluate a location over its forecast.
  * hours: array of { time, speed, direction, gust, precip }, already limited to the hours to consider.
- * Returns { days: [{date, status, speedKmh, directionDeg, gustKmh}], windows, nextWindow }.
+ * Returns { days: [{date, status, speedKmh, directionDeg, gustKmh, rain}], windows, nextWindow }.
  */
 export function evaluateLocation(hours, conditions, amber) {
   const classified = hours.map((h) => ({ ...h, status: classifyHour(h, conditions, amber) }));
@@ -143,6 +128,7 @@ export function evaluateLocation(hours, conditions, amber) {
       speedKmh: Math.round(rep.speed),
       directionDeg: Math.round(rep.direction),
       gustKmh: Math.round(rep.gust),
+      rain: list.some(isRaining),
     };
   });
 

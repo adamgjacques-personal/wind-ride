@@ -3,7 +3,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fetchForecast } from './providers/openMeteo.js';
-import { evaluateLocation } from './evaluator.js';
+import { evaluateLocation, isRaining } from './evaluator.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -18,9 +18,9 @@ export function validateLocation(loc) {
   if (typeof loc.lat !== 'number' || typeof loc.lon !== 'number') problems.push('lat/lon must be numbers');
   if (!c) problems.push('conditions missing');
   else {
-    if (!(c.speedMinKmh <= c.speedMaxKmh)) problems.push('speedMinKmh must be <= speedMaxKmh');
+    if (typeof c.speedMinKmh !== 'number') problems.push('speedMinKmh must be a number');
     if (!Array.isArray(c.directions) || c.directions.length === 0) problems.push('directions must be a non-empty array of [from,to]');
-    if (!c.hours || !(c.hours.start < c.hours.end)) problems.push('hours.start must be < hours.end');
+    if (c.hours && !(c.hours.start < c.hours.end)) problems.push('hours.start must be < hours.end');
   }
   if (problems.length) throw new Error(`Invalid location "${loc.id ?? '?'}": ${problems.join('; ')}`);
 }
@@ -36,12 +36,13 @@ async function main() {
     try {
       const { hours, localNow } = await fetchForecast(loc, forecastDays);
       const upcoming = hours.filter((h) => h.time >= localNow);
+      const raining = isRaining(upcoming[0]);
       const result = evaluateLocation(upcoming, loc.conditions, { ...amber, ...loc.amber });
-      out.push({ id: loc.id, name: loc.name, windyUrl: windyLink(loc), nextWindow: result.nextWindow, days: result.days, error: null });
+      out.push({ id: loc.id, name: loc.name, windyUrl: windyLink(loc), raining, nextWindow: result.nextWindow, days: result.days, error: null });
     } catch (err) {
       // One failing location should not blank the whole page.
       console.error(`Failed for ${loc.id}: ${err.message}`);
-      out.push({ id: loc.id, name: loc.name, windyUrl: windyLink(loc), nextWindow: null, days: [], error: err.message });
+      out.push({ id: loc.id, name: loc.name, windyUrl: windyLink(loc), raining: false, nextWindow: null, days: [], error: err.message });
     }
   }
 

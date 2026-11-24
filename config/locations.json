@@ -1,8 +1,11 @@
 {
-  "_note": "SAMPLE DATA. Replace with your real locations and conditions. Speeds and gusts are km/h, directions are degrees (0 = north, 90 = east) describing where the wind comes FROM. A direction range may wrap through north, e.g. [330, 30].",
+  "_note": "Speeds are km/h (minimums only), directions are degrees (0 = north, 90 = east) for where the wind comes FROM. A direction range may wrap through north, e.g. [330, 30]. 'hours' is optional (default all day). Rain is shown as an icon only and never changes the rating.",
   "defaults": {
     "forecastDays": 7,
-    "amber": { "speedMarginPct": 15, "directionMarginDeg": 20, "gustMarginPct": 15, "precipMarginMm": 0.5 }
+    "amber": {
+      "speedMarginPct": 15,
+      "directionMarginDeg": 20
+    }
   },
   "locations": [
     {
@@ -13,12 +16,21 @@
       "windyUrl": null,
       "conditions": {
         "speedMinKmh": 10,
-        "speedMaxKmh": 25,
         "directions": [[200, 250]],
-        "gustMaxKmh": 35,
         "hours": { "start": 7, "end": 19 },
-        "maxPrecipMm": 0.2,
         "minDurationHours": 2
+      }
+    },
+    {
+      "id": "Wyuna-Pitch",
+      "name": "Wyuna Pitch",
+      "lat": -33.867486,
+      "lon": 151.253329,
+      "windyUrl": null,
+      "conditions": {
+        "speedMinKmh": 10,
+        "directions": [[140, 220]],
+        "minDurationHours": 1
       }
     }
   ]

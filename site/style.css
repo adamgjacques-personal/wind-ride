@@ -20,3 +20,4 @@ a { color: #1a5fb4; }
 @media (max-width: 640px) {
   th:nth-child(3), td:nth-child(3) { display: none; }
 }
+.rain { font-size: 0.9em; }
